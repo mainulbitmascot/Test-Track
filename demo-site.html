@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DemoShop — Test Site</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f7f8fa;
+    color: #1a1a1a;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Header */
+  header {
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+    position: sticky; top: 0; z-index: 50;
+  }
+  .nav {
+    max-width: 1100px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 24px;
+  }
+  .logo { font-size: 20px; font-weight: 700; color: #2563eb; cursor: pointer; }
+  .nav-links { display: flex; gap: 6px; align-items: center; }
+  .nav-links a {
+    padding: 8px 14px; border-radius: 6px;
+    color: #374151; text-decoration: none; font-size: 14px; cursor: pointer;
+    background: none; border: none; font-family: inherit;
+  }
+  .nav-links a:hover { background: #f3f4f6; }
+  .nav-links a.active { background: #eff6ff; color: #2563eb; }
+  .cart-badge {
+    display: inline-block; min-width: 20px; padding: 2px 6px;
+    background: #ef4444; color: #fff; border-radius: 10px;
+    font-size: 11px; margin-left: 4px; text-align: center;
+  }
+  .user-info { font-size: 13px; color: #6b7280; margin-right: 8px; }
+
+  /* Main container */
+  main {
+    max-width: 1100px; margin: 0 auto;
+    padding: 32px 24px 60px;
+  }
+  .page { display: none; }
+  .page.active { display: block; }
+  h1 { font-size: 28px; margin-bottom: 20px; font-weight: 700; }
+  h2 { font-size: 20px; margin-bottom: 14px; margin-top: 24px; font-weight: 600; }
+  p { margin-bottom: 12px; color: #4b5563; }
+
+  /* Cards & sections */
+  .card {
+    background: #fff; border: 1px solid #e5e7eb;
+    border-radius: 8px; padding: 24px; margin-bottom: 16px;
+  }
+
+  /* Forms */
+  form { display: flex; flex-direction: column; gap: 14px; }
+  label { font-size: 14px; font-weight: 500; color: #374151; }
+  input, textarea, select {
+    padding: 10px 12px; border: 1px solid #d1d5db;
+    border-radius: 6px; font-size: 14px; font-family: inherit;
+    width: 100%;
+  }
+  input:focus, textarea:focus, select:focus {
+    outline: none; border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+  textarea { min-height: 100px; resize: vertical; }
+  .form-row { display: flex; gap: 12px; }
+  .form-row > * { flex: 1; }
+
+  /* Buttons */
+  button, .btn {
+    padding: 10px 18px; border: none; border-radius: 6px;
+    background: #2563eb; color: #fff; font-size: 14px; font-weight: 500;
+    cursor: pointer; font-family: inherit;
+    transition: background 0.15s;
+  }
+  button:hover, .btn:hover { background: #1d4ed8; }
+  button:disabled { background: #9ca3af; cursor: not-allowed; }
+  .btn-secondary { background: #fff; color: #374151; border: 1px solid #d1d5db; }
+  .btn-secondary:hover { background: #f9fafb; }
+  .btn-danger { background: #ef4444; }
+  .btn-danger:hover { background: #dc2626; }
+  .btn-small { padding: 6px 12px; font-size: 13px; }
+
+  /* Products grid */
+  .products { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+  .product {
+    background: #fff; border: 1px solid #e5e7eb; border-radius: 8px;
+    padding: 16px; display: flex; flex-direction: column;
+  }
+  .product-img {
+    width: 100%; height: 140px; background: #f3f4f6;
+    border-radius: 6px; display: flex; align-items: center; justify-content: center;
+    font-size: 48px; margin-bottom: 12px;
+  }
+  .product-name { font-weight: 600; margin-bottom: 4px; }
+  .product-price { color: #2563eb; font-weight: 700; font-size: 18px; margin-bottom: 12px; }
+  .product-desc { font-size: 13px; color: #6b7280; margin-bottom: 12px; flex-grow: 1; }
+
+  /* Cart */
+  .cart-item {
+    display: flex; align-items: center; gap: 16px;
+    padding: 12px 0; border-bottom: 1px solid #f3f4f6;
+  }
+  .cart-item-icon { font-size: 32px; }
+  .cart-item-info { flex-grow: 1; }
+  .cart-item-name { font-weight: 600; }
+  .cart-item-price { color: #6b7280; font-size: 14px; }
+  .cart-qty { display: flex; align-items: center; gap: 8px; }
+  .cart-qty button { padding: 4px 10px; background: #f3f4f6; color: #374151; }
+  .cart-total { font-size: 20px; font-weight: 700; margin-top: 16px; text-align: right; }
+
+  /* Video */
+  .video-wrap { position: relative; padding-bottom: 56.25%; height: 0; background: #000; border-radius: 8px; overflow: hidden; }
+  .video-wrap iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+
+  /* External links */
+  .link-list a {
+    display: block; padding: 12px 16px; margin-bottom: 8px;
+    background: #fff; border: 1px solid #e5e7eb; border-radius: 6px;
+    color: #2563eb; text-decoration: none;
+  }
+  .link-list a:hover { background: #f9fafb; }
+  .link-list a::after { content: " ↗"; color: #9ca3af; }
+
+  /* Reviews */
+  .review { padding: 16px 0; border-bottom: 1px solid #f3f4f6; }
+  .review-header { display: flex; justify-content: space-between; margin-bottom: 6px; }
+  .review-author { font-weight: 600; }
+  .review-date { font-size: 12px; color: #9ca3af; }
+  .stars { color: #f59e0b; letter-spacing: 2px; margin-bottom: 6px; }
+
+  /* Messages */
+  .msg {
+    padding: 12px 16px; border-radius: 6px; margin-bottom: 16px;
+    font-size: 14px;
+  }
+  .msg-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+  .msg-error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+  .msg-info { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+
+  /* Auth switch links */
+  .auth-switch { text-align: center; margin-top: 16px; font-size: 14px; color: #6b7280; }
+  .auth-switch a { color: #2563eb; cursor: pointer; text-decoration: underline; }
+
+  /* Utility */
+  .hidden { display: none !important; }
+  .text-center { text-align: center; }
+  .mt-16 { margin-top: 16px; }
+
+  /* Payment card mock */
+  .payment-preview {
+    background: linear-gradient(135deg, #1e3a8a, #2563eb);
+    color: #fff; padding: 20px; border-radius: 10px; margin-bottom: 16px;
+    font-family: monospace;
+  }
+  .payment-preview .brand { text-align: right; font-weight: 700; font-size: 16px; margin-bottom: 20px; }
+  .payment-preview .cardnum { font-size: 20px; letter-spacing: 2px; margin-bottom: 12px; }
+  .payment-preview .cardrow { display: flex; justify-content: space-between; font-size: 12px; }
+
+  @media (max-width: 640px) {
+    .nav { flex-wrap: wrap; gap: 8px; }
+    .nav-links { flex-wrap: wrap; }
+    .form-row { flex-direction: column; }
+    h1 { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="nav">
+    <div class="logo" onclick="go('home')">DemoShop</div>
+    <div class="nav-links" id="navLinks"></div>
+  </div>
+</header>
+
+<main id="app">
+
+  <!-- HOME -->
+  <div class="page" data-page="home">
+    <h1>Welcome to DemoShop</h1>
+    <p>A demo site for testing user flows — sign up, browse products, add to cart, checkout, watch videos, submit forms, leave reviews, and subscribe to the newsletter.</p>
+    <div class="card">
+      <h2>Get started</h2>
+      <p>Log in or create an account to try the full flow. Guests can browse and add to cart, but checkout requires an account.</p>
+      <div style="display: flex; gap: 10px; margin-top: 12px;">
+        <button onclick="go('signup')">Create account</button>
+        <button class="btn-secondary" onclick="go('login')">Log in</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>What you can do here</h2>
+      <p>• Browse and buy products (mock payment)<br>
+         • Watch an embedded video<br>
+         • Submit a contact form<br>
+         • Follow external links<br>
+         • Leave product reviews<br>
+         • Subscribe to the newsletter</p>
+    </div>
+  </div>
+
+  <!-- SIGNUP -->
+  <div class="page" data-page="signup">
+    <h1>Create account</h1>
+    <div class="card">
+      <div id="signupMsg"></div>
+      <form onsubmit="handleSignup(event)">
+        <div>
+          <label for="su-name">Full name</label>
+          <input type="text" id="su-name" required autocomplete="name">
+        </div>
+        <div>
+          <label for="su-email">Email</label>
+          <input type="email" id="su-email" required autocomplete="email">
+        </div>
+        <div>
+          <label for="su-phone">Phone (optional)</label>
+          <input type="tel" id="su-phone" autocomplete="tel">
+        </div>
+        <div>
+          <label for="su-password">Password (min 6 characters)</label>
+          <input type="password" id="su-password" minlength="6" required autocomplete="new-password">
+        </div>
+        <button type="submit">Create account</button>
+      </form>
+      <div class="auth-switch">Already have one? <a onclick="go('login')">Log in</a></div>
+    </div>
+  </div>
+
+  <!-- LOGIN -->
+  <div class="page" data-page="login">
+    <h1>Log in</h1>
+    <div class="card">
+      <div id="loginMsg"></div>
+      <form onsubmit="handleLogin(event)">
+        <div>
+          <label for="li-email">Email</label>
+          <input type="email" id="li-email" required autocomplete="email">
+        </div>
+        <div>
+          <label for="li-password">Password</label>
+          <input type="password" id="li-password" required autocomplete="current-password">
+        </div>
+        <button type="submit">Log in</button>
+      </form>
+      <div class="auth-switch">No account? <a onclick="go('signup')">Create one</a></div>
+    </div>
+  </div>
+
+  <!-- ACCOUNT -->
+  <div class="page" data-page="account">
+    <h1>Your account</h1>
+    <div class="card" id="accountCard"></div>
+  </div>
+
+  <!-- PRODUCTS -->
+  <div class="page" data-page="products">
+    <h1>Products</h1>
+    <div class="products" id="productsGrid"></div>
+  </div>
+
+  <!-- CART -->
+  <div class="page" data-page="cart">
+    <h1>Your cart</h1>
+    <div class="card" id="cartContent"></div>
+  </div>
+
+  <!-- CHECKOUT -->
+  <div class="page" data-page="checkout">
+    <h1>Checkout</h1>
+    <div class="card">
+      <div id="checkoutMsg"></div>
+      <div id="checkoutSummary"></div>
+      <h2>Payment (demo)</h2>
+      <p style="font-size: 13px; margin-bottom: 12px;">This is a demo — no real payment is processed. Use test card <strong>4242 4242 4242 4242</strong>, any future expiry, any CVC.</p>
+      <div class="payment-preview">
+        <div class="brand">DEMO PAY</div>
+        <div class="cardnum" id="cardPreview">•••• •••• •••• ••••</div>
+        <div class="cardrow">
+          <div><div style="opacity:0.7;font-size:10px;">CARDHOLDER</div><div id="namePreview">YOUR NAME</div></div>
+          <div><div style="opacity:0.7;font-size:10px;">EXPIRES</div><div id="expPreview">MM/YY</div></div>
+        </div>
+      </div>
+      <form onsubmit="handleCheckout(event)">
+        <div>
+          <label for="pay-name">Cardholder name</label>
+          <input type="text" id="pay-name" required oninput="updateCardPreview()">
+        </div>
+        <div>
+          <label for="pay-card">Card number</label>
+          <input type="text" id="pay-card" required maxlength="19" placeholder="4242 4242 4242 4242" oninput="formatCard(this); updateCardPreview()">
+        </div>
+        <div class="form-row">
+          <div>
+            <label for="pay-exp">Expiry (MM/YY)</label>
+            <input type="text" id="pay-exp" required maxlength="5" placeholder="12/28" oninput="formatExp(this); updateCardPreview()">
+          </div>
+          <div>
+            <label for="pay-cvc">CVC</label>
+            <input type="text" id="pay-cvc" required maxlength="4" placeholder="123">
+          </div>
+        </div>
+        <button type="submit">Pay now</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ORDER CONFIRMATION -->
+  <div class="page" data-page="confirmation">
+    <h1>Order confirmed</h1>
+    <div class="card">
+      <div class="msg msg-success">✓ Payment successful (demo). Your order has been placed.</div>
+      <div id="confirmationDetails"></div>
+      <button onclick="go('products')" class="mt-16">Continue shopping</button>
+    </div>
+  </div>
+
+  <!-- VIDEO -->
+  <div class="page" data-page="video">
+    <h1>Watch a video</h1>
+    <div class="card">
+      <div class="video-wrap">
+        <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                title="Demo video"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen></iframe>
+      </div>
+      <p class="mt-16" style="font-size:13px;">This is an embedded YouTube video for testing that iframe playback works.</p>
+    </div>
+  </div>
+
+  <!-- EXTERNAL LINKS -->
+  <div class="page" data-page="links">
+    <h1>External links</h1>
+    <div class="card">
+      <p>These open in a new tab — useful for testing outbound link behaviour.</p>
+      <div class="link-list mt-16">
+        <a href="https://www.wikipedia.org" target="_blank" rel="noopener">Wikipedia</a>
+        <a href="https://www.github.com" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://developer.mozilla.org" target="_blank" rel="noopener">MDN Web Docs</a>
+        <a href="https://www.google.com" target="_blank" rel="noopener">Google</a>
+        <a href="https://example.com" target="_blank" rel="noopener">example.com</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTACT FORM -->
+  <div class="page" data-page="contact">
+    <h1>Contact us</h1>
+    <div class="card">
+      <div id="contactMsg"></div>
+      <form onsubmit="handleContact(event)">
+        <div>
+          <label for="c-name">Name</label>
+          <input type="text" id="c-name" required>
+        </div>
+        <div>
+          <label for="c-email">Email</label>
+          <input type="email" id="c-email" required>
+        </div>
+        <div>
+          <label for="c-subject">Subject</label>
+          <select id="c-subject" required>
+            <option value="">Select…</option>
+            <option>General inquiry</option>
+            <option>Order support</option>
+            <option>Feedback</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div>
+          <label for="c-message">Message</label>
+          <textarea id="c-message" required></textarea>
+        </div>
+        <button type="submit">Send message</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- REVIEWS -->
+  <div class="page" data-page="reviews">
+    <h1>Reviews</h1>
+    <div class="card">
+      <h2>Leave a review</h2>
+      <div id="reviewMsg"></div>
+      <form onsubmit="handleReview(event)">
+        <div>
+          <label for="r-product">Product</label>
+          <select id="r-product" required>
+            <option value="">Select a product…</option>
+          </select>
+        </div>
+        <div>
+          <label for="r-rating">Rating</label>
+          <select id="r-rating" required>
+            <option value="5">★★★★★ Excellent</option>
+            <option value="4">★★★★ Good</option>
+            <option value="3">★★★ Okay</option>
+            <option value="2">★★ Poor</option>
+            <option value="1">★ Terrible</option>
+          </select>
+        </div>
+        <div>
+          <label for="r-text">Your review</label>
+          <textarea id="r-text" required></textarea>
+        </div>
+        <button type="submit">Submit review</button>
+      </form>
+    </div>
+    <div class="card">
+      <h2>Recent reviews</h2>
+      <div id="reviewsList"></div>
+    </div>
+  </div>
+
+  <!-- NEWSLETTER -->
+  <div class="page" data-page="newsletter">
+    <h1>Newsletter</h1>
+    <div class="card">
+      <p>Subscribe for updates. You can unsubscribe any time.</p>
+      <div id="newsMsg"></div>
+      <form onsubmit="handleNewsletter(event)">
+        <div>
+          <label for="n-email">Email address</label>
+          <input type="email" id="n-email" required>
+        </div>
+        <div>
+          <label><input type="checkbox" id="n-weekly" checked> Weekly digest</label>
+        </div>
+        <div>
+          <label><input type="checkbox" id="n-offers"> Promotions and offers</label>
+        </div>
+        <button type="submit">Subscribe</button>
+      </form>
+    </div>
+    <div class="card" id="subscribersCard" style="display:none;">
+      <h2>Your subscriptions</h2>
+      <div id="subscribersList"></div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ============ STATE ============
+const PRODUCTS = [
+  { id: 1, name: 'Wireless Headphones', price: 79.99, icon: '🎧', desc: 'Comfortable over-ear headphones with noise cancellation.' },
+  { id: 2, name: 'Coffee Mug',           price:  12.50, icon: '☕', desc: 'Ceramic mug, holds 350ml. Dishwasher safe.' },
+  { id: 3, name: 'Notebook',             price:   8.00, icon: '📓', desc: '200 lined pages, hardcover, ribbon bookmark.' },
+  { id: 4, name: 'Desk Lamp',            price:  45.00, icon: '💡', desc: 'Adjustable LED lamp with three brightness levels.' },
+  { id: 5, name: 'Backpack',             price:  59.90, icon: '🎒', desc: 'Water-resistant, laptop compartment, 25L capacity.' },
+  { id: 6, name: 'Water Bottle',         price:  18.00, icon: '🍶', desc: 'Insulated stainless steel, keeps drinks cold 24h.' },
+];
+
+const state = {
+  currentUser: null,
+  cart: [],
+  reviews: [],
+  subscriptions: [],
+};
+
+// ============ STORAGE ============
+function save() {
+  try {
+    localStorage.setItem('demoshop', JSON.stringify({
+      users: JSON.parse(localStorage.getItem('demoshop_users') || '[]'),
+      currentUser: state.currentUser,
+      cart: state.cart,
+      reviews: state.reviews,
+      subscriptions: state.subscriptions,
+    }));
+    localStorage.setItem('demoshop_currentUser', JSON.stringify(state.currentUser));
+    localStorage.setItem('demoshop_cart', JSON.stringify(state.cart));
+    localStorage.setItem('demoshop_reviews', JSON.stringify(state.reviews));
+    localStorage.setItem('demoshop_subs', JSON.stringify(state.subscriptions));
+  } catch (e) { console.warn('save failed', e); }
+}
+function load() {
+  try {
+    state.currentUser  = JSON.parse(localStorage.getItem('demoshop_currentUser') || 'null');
+    state.cart         = JSON.parse(localStorage.getItem('demoshop_cart')        || '[]');
+    state.reviews      = JSON.parse(localStorage.getItem('demoshop_reviews')     || '[]');
+    state.subscriptions= JSON.parse(localStorage.getItem('demoshop_subs')        || '[]');
+  } catch (e) { console.warn('load failed', e); }
+}
+function getUsers() {
+  try { return JSON.parse(localStorage.getItem('demoshop_users') || '[]'); }
+  catch { return []; }
+}
+function saveUsers(users) {
+  localStorage.setItem('demoshop_users', JSON.stringify(users));
+}
+
+// ============ ROUTING ============
+function go(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const target = document.querySelector(`[data-page="${page}"]`);
+  if (target) target.classList.add('active');
+  renderNav();
+  if (page === 'products')     renderProducts();
+  if (page === 'cart')         renderCart();
+  if (page === 'account')      renderAccount();
+  if (page === 'reviews')      renderReviews();
+  if (page === 'newsletter')   renderSubscriptions();
+  if (page === 'checkout')     renderCheckoutSummary();
+  window.scrollTo(0, 0);
+}
+
+// ============ NAV ============
+function renderNav() {
+  const nav = document.getElementById('navLinks');
+  const cartCount = state.cart.reduce((s, i) => s + i.qty, 0);
+  const cartLabel = `Cart${cartCount ? ` <span class="cart-badge">${cartCount}</span>` : ''}`;
+  const authLinks = state.currentUser
+    ? `<span class="user-info">Hi, ${state.currentUser.name.split(' ')[0]}</span>
+       <a onclick="go('account')">Account</a>
+       <a onclick="logout()">Log out</a>`
+    : `<a onclick="go('login')">Log in</a>
+       <a onclick="go('signup')">Sign up</a>`;
+  nav.innerHTML = `
+    <a onclick="go('products')">Products</a>
+    <a onclick="go('video')">Video</a>
+    <a onclick="go('links')">Links</a>
+    <a onclick="go('contact')">Contact</a>
+    <a onclick="go('reviews')">Reviews</a>
+    <a onclick="go('newsletter')">Newsletter</a>
+    <a onclick="go('cart')">${cartLabel}</a>
+    ${authLinks}
+  `;
+}
+
+// ============ MESSAGES ============
+function msg(id, text, type = 'info') {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = `<div class="msg msg-${type}">${text}</div>`;
+  setTimeout(() => { if (el) el.innerHTML = ''; }, 5000);
+}
+
+// ============ AUTH ============
+function handleSignup(e) {
+  e.preventDefault();
+  const name  = document.getElementById('su-name').value.trim();
+  const email = document.getElementById('su-email').value.trim().toLowerCase();
+  const phone = document.getElementById('su-phone').value.trim();
+  const pw    = document.getElementById('su-password').value;
+  const users = getUsers();
+  if (users.find(u => u.email === email)) {
+    return msg('signupMsg', 'An account with that email already exists.', 'error');
+  }
+  const newUser = { name, email, phone, password: pw, createdAt: new Date().toISOString() };
+  users.push(newUser);
+  saveUsers(users);
+  state.currentUser = { name, email, phone };
+  save();
+  msg('signupMsg', 'Account created. Redirecting…', 'success');
+  setTimeout(() => go('account'), 700);
+}
+function handleLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('li-email').value.trim().toLowerCase();
+  const pw    = document.getElementById('li-password').value;
+  const user  = getUsers().find(u => u.email === email && u.password === pw);
+  if (!user) return msg('loginMsg', 'Wrong email or password.', 'error');
+  state.currentUser = { name: user.name, email: user.email, phone: user.phone };
+  save();
+  msg('loginMsg', 'Logged in. Redirecting…', 'success');
+  setTimeout(() => go('account'), 500);
+}
+function logout() {
+  state.currentUser = null;
+  save();
+  go('home');
+}
+
+// ============ ACCOUNT ============
+function renderAccount() {
+  const card = document.getElementById('accountCard');
+  if (!state.currentUser) {
+    card.innerHTML = `<div class="msg msg-info">You're not logged in.</div>
+      <button onclick="go('login')">Log in</button>
+      <button class="btn-secondary" onclick="go('signup')">Sign up</button>`;
+    return;
+  }
+  const u = state.currentUser;
+  card.innerHTML = `
+    <h2>Your details</h2>
+    <p><strong>Name:</strong> ${u.name}</p>
+    <p><strong>Email:</strong> ${u.email}</p>
+    <p><strong>Phone:</strong> ${u.phone || '(not provided)'}</p>
+    <button class="btn-danger btn-small mt-16" onclick="logout()">Log out</button>
+  `;
+}
+
+// ============ PRODUCTS & CART ============
+function renderProducts() {
+  const grid = document.getElementById('productsGrid');
+  grid.innerHTML = PRODUCTS.map(p => `
+    <div class="product">
+      <div class="product-img">${p.icon}</div>
+      <div class="product-name">${p.name}</div>
+      <div class="product-price">$${p.price.toFixed(2)}</div>
+      <div class="product-desc">${p.desc}</div>
+      <button onclick="addToCart(${p.id})">Add to cart</button>
+    </div>
+  `).join('');
+}
+function addToCart(id) {
+  const existing = state.cart.find(i => i.id === id);
+  if (existing) existing.qty++;
+  else state.cart.push({ id, qty: 1 });
+  save();
+  renderNav();
+  const p = PRODUCTS.find(x => x.id === id);
+  alert(`Added "${p.name}" to cart.`);
+}
+function renderCart() {
+  const el = document.getElementById('cartContent');
+  if (state.cart.length === 0) {
+    el.innerHTML = `<p>Your cart is empty.</p><button class="mt-16" onclick="go('products')">Browse products</button>`;
+    return;
+  }
+  let total = 0;
+  const items = state.cart.map(item => {
+    const p = PRODUCTS.find(x => x.id === item.id);
+    const sub = p.price * item.qty;
+    total += sub;
+    return `
+      <div class="cart-item">
+        <div class="cart-item-icon">${p.icon}</div>
+        <div class="cart-item-info">
+          <div class="cart-item-name">${p.name}</div>
+          <div class="cart-item-price">$${p.price.toFixed(2)} × ${item.qty} = $${sub.toFixed(2)}</div>
+        </div>
+        <div class="cart-qty">
+          <button onclick="changeQty(${p.id}, -1)">−</button>
+          <span>${item.qty}</span>
+          <button onclick="changeQty(${p.id}, 1)">+</button>
+          <button class="btn-danger btn-small" onclick="removeFromCart(${p.id})">Remove</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+  el.innerHTML = `${items}
+    <div class="cart-total">Total: $${total.toFixed(2)}</div>
+    <div style="text-align:right; margin-top:12px;">
+      <button class="btn-secondary" onclick="clearCart()">Clear cart</button>
+      <button onclick="beginCheckout()">Checkout</button>
+    </div>`;
+}
+function changeQty(id, delta) {
+  const item = state.cart.find(i => i.id === id);
+  if (!item) return;
+  item.qty += delta;
+  if (item.qty <= 0) state.cart = state.cart.filter(i => i.id !== id);
+  save(); renderNav(); renderCart();
+}
+function removeFromCart(id) {
+  state.cart = state.cart.filter(i => i.id !== id);
+  save(); renderNav(); renderCart();
+}
+function clearCart() {
+  if (confirm('Clear the whole cart?')) {
+    state.cart = []; save(); renderNav(); renderCart();
+  }
+}
+function beginCheckout() {
+  if (!state.currentUser) {
+    alert('Please log in first to check out.');
+    return go('login');
+  }
+  go('checkout');
+}
+
+// ============ CHECKOUT ============
+function renderCheckoutSummary() {
+  const el = document.getElementById('checkoutSummary');
+  if (state.cart.length === 0) {
+    el.innerHTML = '<p>Your cart is empty. <a onclick="go(\'products\')" style="cursor:pointer;color:#2563eb;">Browse products</a></p>';
+    return;
+  }
+  let total = 0;
+  const lines = state.cart.map(i => {
+    const p = PRODUCTS.find(x => x.id === i.id);
+    const sub = p.price * i.qty;
+    total += sub;
+    return `<div style="display:flex;justify-content:space-between;padding:4px 0;">
+      <span>${p.icon} ${p.name} × ${i.qty}</span><span>$${sub.toFixed(2)}</span>
+    </div>`;
+  }).join('');
+  el.innerHTML = `<h2>Order summary</h2>${lines}
+    <div style="border-top:1px solid #e5e7eb;margin-top:12px;padding-top:12px;
+      display:flex;justify-content:space-between;font-weight:700;">
+      <span>Total</span><span>$${total.toFixed(2)}</span>
+    </div>`;
+}
+function formatCard(inp) {
+  let v = inp.value.replace(/\D/g, '').slice(0, 16);
+  inp.value = v.replace(/(.{4})/g, '$1 ').trim();
+}
+function formatExp(inp) {
+  let v = inp.value.replace(/\D/g, '').slice(0, 4);
+  if (v.length >= 3) v = v.slice(0, 2) + '/' + v.slice(2);
+  inp.value = v;
+}
+function updateCardPreview() {
+  const card = document.getElementById('pay-card').value || '•••• •••• •••• ••••';
+  const name = document.getElementById('pay-name').value.toUpperCase() || 'YOUR NAME';
+  const exp  = document.getElementById('pay-exp').value || 'MM/YY';
+  document.getElementById('cardPreview').textContent = card;
+  document.getElementById('namePreview').textContent = name;
+  document.getElementById('expPreview').textContent  = exp;
+}
+function handleCheckout(e) {
+  e.preventDefault();
+  const card = document.getElementById('pay-card').value.replace(/\s/g, '');
+  const exp  = document.getElementById('pay-exp').value;
+  const cvc  = document.getElementById('pay-cvc').value;
+  if (card.length < 13) return msg('checkoutMsg', 'Card number looks too short.', 'error');
+  if (!/^\d{2}\/\d{2}$/.test(exp)) return msg('checkoutMsg', 'Expiry must be MM/YY.', 'error');
+  if (cvc.length < 3) return msg('checkoutMsg', 'CVC must be 3 or 4 digits.', 'error');
+  const orderId = 'DS-' + Date.now().toString().slice(-6);
+  let total = 0;
+  const items = state.cart.map(i => {
+    const p = PRODUCTS.find(x => x.id === i.id);
+    total += p.price * i.qty;
+    return `${p.icon} ${p.name} × ${i.qty}`;
+  });
+  document.getElementById('confirmationDetails').innerHTML = `
+    <p><strong>Order:</strong> ${orderId}</p>
+    <p><strong>Items:</strong><br>${items.join('<br>')}</p>
+    <p><strong>Total charged:</strong> $${total.toFixed(2)}</p>
+    <p><strong>Card:</strong> **** **** **** ${card.slice(-4)}</p>
+  `;
+  state.cart = [];
+  save(); renderNav();
+  go('confirmation');
+}
+
+// ============ CONTACT ============
+function handleContact(e) {
+  e.preventDefault();
+  msg('contactMsg', '✓ Message sent. We\'ll reply within 24 hours (demo).', 'success');
+  e.target.reset();
+}
+
+// ============ REVIEWS ============
+function renderReviews() {
+  const sel = document.getElementById('r-product');
+  sel.innerHTML = '<option value="">Select a product…</option>' +
+    PRODUCTS.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+  const list = document.getElementById('reviewsList');
+  if (state.reviews.length === 0) {
+    list.innerHTML = '<p>No reviews yet. Be the first.</p>'; return;
+  }
+  list.innerHTML = state.reviews.slice().reverse().map(r => {
+    const p = PRODUCTS.find(x => x.id === r.productId);
+    return `<div class="review">
+      <div class="review-header">
+        <div class="review-author">${r.author} <span style="color:#6b7280;font-weight:400;font-size:13px;">on ${p ? p.name : 'unknown'}</span></div>
+        <div class="review-date">${new Date(r.date).toLocaleDateString()}</div>
+      </div>
+      <div class="stars">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
+      <div>${escapeHtml(r.text)}</div>
+    </div>`;
+  }).join('');
+}
+function handleReview(e) {
+  e.preventDefault();
+  const productId = parseInt(document.getElementById('r-product').value);
+  const rating    = parseInt(document.getElementById('r-rating').value);
+  const text      = document.getElementById('r-text').value.trim();
+  const author    = state.currentUser ? state.currentUser.name : 'Guest';
+  state.reviews.push({ productId, rating, text, author, date: new Date().toISOString() });
+  save();
+  msg('reviewMsg', '✓ Review submitted.', 'success');
+  e.target.reset();
+  renderReviews();
+}
+function escapeHtml(s) {
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+// ============ NEWSLETTER ============
+function handleNewsletter(e) {
+  e.preventDefault();
+  const email  = document.getElementById('n-email').value.trim().toLowerCase();
+  const weekly = document.getElementById('n-weekly').checked;
+  const offers = document.getElementById('n-offers').checked;
+  if (state.subscriptions.find(s => s.email === email)) {
+    return msg('newsMsg', 'That email is already subscribed.', 'info');
+  }
+  state.subscriptions.push({ email, weekly, offers, date: new Date().toISOString() });
+  save();
+  msg('newsMsg', '✓ Subscribed. Thanks!', 'success');
+  e.target.reset();
+  document.getElementById('n-weekly').checked = true;
+  renderSubscriptions();
+}
+function renderSubscriptions() {
+  const card = document.getElementById('subscribersCard');
+  const list = document.getElementById('subscribersList');
+  if (state.subscriptions.length === 0) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  list.innerHTML = state.subscriptions.map((s, i) => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f3f4f6;">
+      <div>
+        <strong>${s.email}</strong><br>
+        <span style="font-size:12px;color:#6b7280;">
+          ${s.weekly ? 'Weekly digest' : ''}${s.weekly && s.offers ? ' · ' : ''}${s.offers ? 'Offers' : ''}
+        </span>
+      </div>
+      <button class="btn-danger btn-small" onclick="unsubscribe(${i})">Unsubscribe</button>
+    </div>
+  `).join('');
+}
+function unsubscribe(idx) {
+  state.subscriptions.splice(idx, 1);
+  save();
+  renderSubscriptions();
+}
+
+// ============ INIT ============
+load();
+renderNav();
+go('home');
+</script>
+
+</body>
+</html>
